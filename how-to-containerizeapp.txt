@@ -1,0 +1,80 @@
+1. create docker file #make sure run pip install commands first before copying code that reduces size of docker image
+FROM python:3.12-slim
+
+WORKDIR /app
+COPY requirements.txt .
+
+RUN python -m pip install --upgrade pip
+RUN python -m pip install -r requirements.txt
+
+COPY . . 
+
+EXPOSE 5001
+
+CMD ["python", "app.py"]
+
+
+
+2. create image -> 
+venvmlops) G:\My Drive\Scalar\mlops-works>docker build -t prediction-model:latest .
+[+] Building 196.6s (9/10)                                                                                                docker:desktop-linux 
+ => [internal] load metadata for docker.io/library/python:3.12-slim                                                                       4.3s 
+ => [internal] load .dockerignore                                                                                                         0.1s 
+ => => transferring context: 2B                                                                                                           0.0s 
+ => [1/6] FROM docker.io/library/python:3.12-slim@sha256:fa48eefe2146644c2308b909d6bb7651a768178f84fc9550dcd495e4d6d84d01                 7.4s 
+ => => resolve docker.io/library/python:3.12-slim@sha256:fa48eefe2146644c2308b909d6bb7651a768178f84fc9550dcd495e4d6d84d01                 0.1s 
+ => => sha256:1f384a3df5003cc3a739008d6e3c2b2afc752887e9ce09757747c0bbb6e68983 250B / 250B                                                0.8s 
+ => => sha256:89933f78055059f29cf8b5a9c0b6df0fe9d96c388b99215881bf653ed6f1ca35 12.11MB / 12.11MB                                          2.0s 
+ => => sha256:dfff024aded812f05863f68d31b04030038e01017329961ea2d5f37e6a1c70ef 1.29MB / 1.29MB                                            1.8s 
+ => => sha256:1733a4cd59540b3470ff7a90963bcdea5b543279dd6bdaf022d7883fdad221e5 29.78MB / 29.78MB                                          3.7s 
+ => => extracting sha256:1733a4cd59540b3470ff7a90963bcdea5b543279dd6bdaf022d7883fdad221e5                                                 2.1s 
+ => => extracting sha256:dfff024aded812f05863f68d31b04030038e01017329961ea2d5f37e6a1c70ef                                                 0.3s 
+ => => extracting sha256:89933f78055059f29cf8b5a9c0b6df0fe9d96c388b99215881bf653ed6f1ca35                                                 0.8s 
+ => => extracting sha256:1f384a3df5003cc3a739008d6e3c2b2afc752887e9ce09757747c0bbb6e68983                                                 0.1s 
+ => [internal] load build context                                                                                                       115.6s
+ => => transferring context: 318.48MB                                                                                                   115.1s
+ => [2/6] WORKDIR /app                                                                                                                    1.5s
+ => [3/6] COPY requirements.txt .                                                                                                         1.1s
+ => [4/6] RUN python -m pip install --upgrade pip                                                                                         7.0s
+ => [5/6] RUN python -m pip install -r requirements.txt                                                                                  64.7s
+ => [6/6] COPY . .                                                                                                        
+ => exporting to image                                                                                                                   16.0s
+ => => exporting layers   
+  => => exporting layers                                                                                                                  21.3s
+ => => exporting manifest sha256:17efa451faa05203c56b297b3d0a28f57367b49d34f0c58e89a8f7e7392674ec                                         0.1s
+ => => exporting config sha256:93f6b6dfd50ae30339b657a75ff6ef2870a8420cb569d01a1025dd77b6c0a50d                                           0.2s
+ => => exporting attestation manifest sha256:88a48a4381d189580f78cab40efb6eb78efa0c400260b957a461c5b5585be2b2                             0.3s
+ => => exporting manifest list sha256:8cd375cede4794925ef01f565c25fb95321dc62c5a38b5d9c1ae7e407c94820e                                    0.1s
+ => => naming to docker.io/library/prediction-model:latest                                                                                0.0s
+ => => unpacking to docker.io/library/prediction-model:latest                                                                             
+ 
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/fmop6jyp0gi58wtcth2xi40sr
+
+(venvmlops) G:\My Drive\Scalar\mlops-works>docker run -p 5001:5001 prediction-model:latest
+ * Serving Flask app 'app'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5001
+ * Running on http://172.17.0.2:5001
+Press CTRL+C to quit
+
+(venvmlops) G:\My Drive\Scalar\mlops-works>curl -X POST http://127.0.0.1:5001/predict -H "Content-Type: application/json" -d "{\"features\": [1,1,1,1]}"
+{"prediction":0}
+
+(venvmlops) G:\My Drive\Scalar\mlops-works>
+
+(venvmlops) G:\My Drive\Scalar\mlops-works>docker run -p 5002:5001 prediction-model:latest
+ * Serving Flask app 'app'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5001
+ * Running on http://172.17.0.2:5001
+Press CTRL+C to quit
+172.17.0.1 - - [17/Dec/2025 10:24:42] "POST /predict HTTP/1.1" 200 -
+
+(venvmlops) G:\My Drive\Scalar\mlops-works>curl -X POST http://127.0.0.1:5002/predict -H "Content-Type: application/json" -d "{\"features\": [1,1,1,1]}"
+{"prediction":0}
+
+(venvmlops) G:\My Drive\Scalar\mlops-works>
